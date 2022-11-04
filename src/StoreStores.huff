@@ -1,0 +1,24 @@
+/* Interface */
+#define function applyDeStore(uint256) nonpayable returns ()
+#define function getAppliedDeStores() view returns (uint256)
+
+
+#define macro APPLY_DESTORE() = takes (0) returns (0) {
+
+}
+
+#define macro GET_APPLIED_DESTORE() = takes (0) returns (0) {
+    
+}
+#define macro MAIN() = takes (0) returns (0) {
+    0x00 calldataload 0xE0 shr
+    dup1 __FUNC_SIG(applyStore) eq applyDeStore jumpi
+    dup1 __FUNC_SIG(getStores) eq getAppliedDeStores jumpi
+
+    0x00 0x00 revert
+
+    applyDeStore:
+        APPLY_DESTORE()
+    getAppliedDeStores:
+        GET_APPLIED_DESTORE()
+}
