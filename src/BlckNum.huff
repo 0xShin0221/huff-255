@@ -1,0 +1,4 @@
+#define macro MAIN() ={
+    number returndatasize mstore
+    msize returndatasize return
+}
