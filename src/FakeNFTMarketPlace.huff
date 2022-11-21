@@ -1,0 +1,148 @@
+#include "./utils/HashMap.huff"
+// SPDX-License-Identifier: MIT
+#define error Error(string)
+/* Interface */
+#define function purchase(uint256) payable returns ()
+#define function getPrice() nonpayable returns (uint256)
+#define function available(uint256) view returns(bool)
+
+/* Storage Slots */
+#define constant NFT_PRICE = FREE_STORAGE_POINTER()
+#define constant TOKENS_MAP_SLOT = FREE_STORAGE_POINTER()
+
+
+// "INVALID_PRICE_VALUE" Revert Message String
+#define constant INVALID_PRICE_VALUE_ERROR = 0x494e56414c49445f50524943455f56414c554500000000000000000000000000
+#define constant INVALID_PRICE_VALUE_LENGTH = 0x13
+
+#define macro PURCHASE() = takes(0) returns (0){
+    PRICE_VALUE_CHECK(error)
+
+    // tokens[_tokenId] = msg.sender
+    caller // [msg.sender]
+    0x04 calldataload // [tokenId, msg.sender]
+    [TOKENS_MAP_SLOT] // [salt, tokenId, msg.sender]
+    STORE_ELEMENT_FROM_KEYS(0x00)
+
+    // Stop the program.
+    stop
+
+    error:
+        0x00 0x00 revert
+        
+}
+
+#define macro GET_PRICE() = takes(0) returns (0){
+    [NFT_PRICE]
+    sload
+
+    0x00
+    mstore
+    0x20
+    0x00
+    return
+}
+
+#define macro AVAILABLE() = takes(0) returns (0) {
+
+
+    // if (tokens[_tokenId] == address(0)) {
+    //     return true;
+    // }
+    // return false;
+
+    0x04 calldataload // [tokenId]
+    // Utility macro
+    __UTIL_IS_AVAILABLE()         // [isAvailable]
+
+    // store result in memory
+    0x00 mstore                 // []
+    0x20 0x00 return
+}
+
+
+// #define macro __UTIL_IS_AVAILABLE() = takes(1) returns(1) {
+//     // ????
+//     // Stack input:                 // [tokenId(arg0)]
+//     // [TOKENS_MAP_SLOT] // [salt, tokenId]
+//     // LOAD_ELEMENT_FROM_KEYS(0x00) // [address]
+//     // 0x0000000000000000000000000000000000000000 // [address(0),address]
+//     // eq [isEqual]
+// }
+
+#define macro __UTIL_IS_AVAILABLE() = takes(1) returns(1) {
+    // Stack input:                 // [tokenId(arg0)]
+    // index / 256
+    0x100 dup2 div                  // [index]
+    __UTIL_GENERATE_MAPPING_KEY()   // [key(tokens[index])]
+
+    // Load mapping key
+    sload                           // [tokens[index], arg0]
+    0x1 0x100 dup4 mod shl          // [mask, tokens[index], arg0]
+    dup1 swap2 dup2 and             // [masked, mask, tokens[index], arg0]
+    eq                              // [isEqual, tokens[index], arg0]
+    swap2 pop pop                   // [isEqual]
+}
+
+/// @notice Creates a mapping key from an index
+#define macro __UTIL_GENERATE_MAPPING_KEY() = takes (1) returns (1) {
+    // Stack input:         [index]
+    // Stack output:        [key(tokens[index])]
+    0x00 mstore                         // []
+    [TOKENS_MAP_SLOT] 0x20 mstore  // []
+
+    0x40 0x00 sha3                      // [key(tokens[index])]
+}
+
+
+#define macro REQUIRE() = takes (3) returns (0) {
+    // takes:       // [condition, message_length, message]
+    do_not_throw    // [do_not_throw_jumpdest, condition, message_length, message]
+    jumpi           // [message_length, message]
+    __ERROR(Error)  // [error_sig, , message_length, message]
+    0x00            // [mem_ptr, error_sig, message_length, message]
+    mstore          // [message_length, message]
+    0x20            // [message_offset, message_length, message]
+    0x04            // [message_offset_ptr, message_offset, message_length, message]
+    mstore          // [message_length, message]
+    0x24            // [message_length_ptr, message_length, message]
+    mstore          // [message]
+    0x44            // [message_ptr, message]
+    mstore          // []
+    0x80            // [size]
+    0x00            // [offset, size]
+    revert          // []
+    do_not_throw:   // [message_length, message]
+        pop         // [message]
+        pop         // []
+}
+
+// TODO: gas optimised when return [NFT_PRICE]
+// #define macro PRICE_VALUE_CHECK(error) = takes(0) returns (1){
+
+#define macro PRICE_VALUE_CHECK(error) = takes(0) returns (0){
+    [INVALID_PRICE_VALUE_ERROR] // ["INVALID_PRICE_VALUE"]
+    [INVALID_PRICE_VALUE_LENGTH] // [19(length),"INVALID_PRICE_VALUE"]
+    [NFT_PRICE] // [price,19(length),"INVALID_PRICE_VALUE"]
+    callvalue  // [price_from_value,19(length),"INVALID_PRICE_VALUE"]]
+    eq iszero // [price != price_from_value, 19(length),"INVALID_PRICE_VALUE"]]
+    REQUIRE()
+}
+
+#define macro MAIN() = takes(0) returns (0) {
+    // Identify which function is being called.
+    0x00 calldataload 0xE0 shr
+    dup1 0xefef39a1 eq purchase jumpi
+    dup1 0x0fcb5984 eq getPrice jumpi
+    dup1 0x96e494e8 eq available jumpi
+
+    purchase:
+        PURCHASE()
+    
+    getPrice:
+        GET_PRICE()
+
+    available:
+        AVAILABLE()
+    
+}
