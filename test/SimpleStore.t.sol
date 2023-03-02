@@ -5,25 +5,25 @@ import "foundry-huff/HuffDeployer.sol";
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
 
-contract BlckNumTest is Test {
-    /// @dev Address of the BlckNum contract.
-    BlckNum public blckNum;
+contract SimpleStoreTest is Test {
+    /// @dev Address of the SimpleStore contract.
+    SimpleStore public simpleStore;
 
     /// @dev Setup the testing environment.
     function setUp() public {
-        blckNum = BlckNum(HuffDeployer.deploy("BlckNum"));
+        simpleStore = SimpleStore(HuffDeployer.deploy("SimpleStore"));
     }
 
-    // /// @dev Ensure that you can set and get the value.
-    // function testSetAndGetValue(uint256 value) public {
-    //     simpleStore.setValue(value);
-    //     console.log(value);
-    //     console.log(simpleStore.getValue());
-    //     assertEq(value, simpleStore.getValue());
-    // }
+    /// @dev Ensure that you can set and get the value.
+    function testSetAndGetValue(uint256 value) public {
+        simpleStore.setValue(value);
+        console.log(value);
+        console.log(simpleStore.getValue());
+        assertEq(value, simpleStore.getValue());
+    }
 }
 
-interface BlckNum {
-    // function setValue(uint256) external;
-    // function getValue() external returns (uint256);
+interface SimpleStore {
+    function setValue(uint256) external;
+    function getValue() external returns (uint256);
 }
