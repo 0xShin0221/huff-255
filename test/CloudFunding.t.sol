@@ -10,7 +10,7 @@ contract CludFunding is Test {
 
     /// @dev Setup the testing environment.
     function setUp() public {
-        cloudFunding = ICloudFunding(HuffDeployer.deploy("CloudFunding"));
+        cloudFunding = ICloudFunding(HuffDeployer.deploy("huff/CloudFunding"));
     }
 
     /// @dev Ensure that you can set and get the value.

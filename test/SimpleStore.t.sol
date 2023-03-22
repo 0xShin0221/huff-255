@@ -11,15 +11,24 @@ contract SimpleStoreTest is Test {
 
     /// @dev Setup the testing environment.
     function setUp() public {
-        simpleStore = SimpleStore(HuffDeployer.deploy("SimpleStore"));
+        simpleStore = SimpleStore(HuffDeployer.deploy("huff/SimpleStore"));
     }
 
     /// @dev Ensure that you can set and get the value.
-    function testSetAndGetValue(uint256 value) public {
+    function testSetAndGetValue() public {
+        uint256 value = 42;
         simpleStore.setValue(value);
         console.log(value);
         console.log(simpleStore.getValue());
         assertEq(value, simpleStore.getValue());
+    }
+
+    function testSettledValue() public {
+        uint256 value = 42;
+        simpleStore.setValue(value);
+        // console.log(value);
+        // console.log(simpleStore.getValue());
+        // assertEq(value, simpleStore.getValue());
     }
 }
 

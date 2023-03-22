@@ -5,6 +5,7 @@
 #define function purchase(uint256) payable returns ()
 #define function getPrice() nonpayable returns (uint256)
 #define function available(uint256) view returns(bool)
+#define function setPrice(uint256) nonpayable returns ()
 
 /* Storage Slots */
 #define constant NFT_PRICE = FREE_STORAGE_POINTER()
@@ -13,7 +14,7 @@
 
 // "INVALID_PRICE_VALUE" Revert Message String
 #define constant INVALID_PRICE_VALUE_ERROR = 0x494e56414c49445f50524943455f56414c554500000000000000000000000000
-#define constant INVALID_PRICE_VALUE_LENGTH = 0x13
+#define constant INVALID_PRICE_VALUE_LENGTH = 0x19
 
 #define macro PURCHASE() = takes(0) returns (0){
     PRICE_VALUE_CHECK(error)
@@ -41,6 +42,12 @@
     0x20
     0x00
     return
+}
+
+#define macro SET_PRICE() = takes(0) returns (0){
+    0x04 calldataload // [price]
+    [NFT_PRICE] // [price, salt]
+    sstore // []
 }
 
 #define macro AVAILABLE() = takes(0) returns (0) {
@@ -133,8 +140,9 @@
     // Identify which function is being called.
     0x00 calldataload 0xE0 shr
     dup1 0xefef39a1 eq purchase jumpi
-    dup1 0x0fcb5984 eq getPrice jumpi
+    dup1 0x98d5fdca eq getPrice jumpi
     dup1 0x96e494e8 eq available jumpi
+    dup1 0x91b7f5ed eq setPrice jumpi
 
     purchase:
         PURCHASE()
@@ -145,4 +153,6 @@
     available:
         AVAILABLE()
     
+    setPrice:
+        SET_PRICE()
 }

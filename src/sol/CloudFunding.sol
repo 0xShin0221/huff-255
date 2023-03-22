@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.15;
 
-contract funder {
+contract CloudFunding {
 
 
     event ProposalCreated(uint256 proposalID, string name, string projectCID, address proposer, uint256 goalAmount, uint256 deadline, uint256 raisedAmount, uint256 votes, bool approved, bool funded);

@@ -3,7 +3,7 @@ pragma solidity ^0.8.15;
 
 import {Script} from "forge-std/Script.sol";
 import {HuffDeployer} from "foundry-huff/HuffDeployer.sol";
-import "../src/IBlckNum.sol";
+import "../src/sol/IBlckNum.sol";
 
 contract DeployBlckNum is Script {
     function run() external {
